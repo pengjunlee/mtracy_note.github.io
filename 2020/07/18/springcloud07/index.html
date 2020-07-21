@@ -1,0 +1,220 @@
+<!DOCTYPE html><html lang="zh-CN" data-theme="light"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width,initial-scale=1"><title>SpringCloud系列之--Zuul高级配置(上) | 李朋军的个人博客</title><meta name="description" content="介绍一下关于Zuul的高级配置。"><meta name="keywords" content="Java, SpringCloud, 微服务"><meta name="author" content="pengjunlee,pengjunlee@163.com"><meta name="copyright" content="pengjunlee"><meta name="format-detection" content="telephone=no"><link rel="shortcut icon" href="http://pengjunlee.3vzhuji.net/static/img/favicon.ico"><link rel="canonical" href="https://coder.mtracy.club/2020/07/18/springcloud07/"><meta http-equiv="Cache-Control" content="no-transform"><meta http-equiv="Cache-Control" content="no-siteapp"><link rel="preconnect" href="//cdn.jsdelivr.net"/><link rel="preconnect" href="//fonts.googleapis.com" crossorigin="crossorigin"/><link rel="preconnect" href="//busuanzi.ibruce.info"/><meta property="og:type" content="article"><meta property="og:title" content="SpringCloud系列之--Zuul高级配置(上)"><meta property="og:url" content="https://coder.mtracy.club/2020/07/18/springcloud07/"><meta property="og:site_name" content="李朋军的个人博客"><meta property="og:description" content="介绍一下关于Zuul的高级配置。"><meta property="og:image" content="http://pengjunlee.3vzhuji.net/static/img/top_img7.jpg"><meta property="article:published_time" content="2020-07-18T14:07:00.000Z"><meta property="article:modified_time" content="2020-07-18T14:07:00.000Z"><meta name="twitter:card" content="summary"><script>var activateDarkMode = function () {
+  document.documentElement.setAttribute('data-theme', 'dark')
+  if (document.querySelector('meta[name="theme-color"]') !== null) {
+    document.querySelector('meta[name="theme-color"]').setAttribute('content', '#000')
+  }
+}
+var activateLightMode = function () {
+  document.documentElement.setAttribute('data-theme', 'light')
+  if (document.querySelector('meta[name="theme-color"]') !== null) {
+    document.querySelector('meta[name="theme-color"]').setAttribute('content', '#fff')
+  }
+}
+
+var getCookies = function (name) {
+  const value = `; ${document.cookie}`
+  const parts = value.split(`; ${name}=`)
+  if (parts.length === 2) return parts.pop().split(';').shift()
+}
+
+var autoChangeMode = 'false'
+var t = getCookies('theme')
+if (autoChangeMode === '1') {
+  var isDarkMode = window.matchMedia('(prefers-color-scheme: dark)').matches
+  var isLightMode = window.matchMedia('(prefers-color-scheme: light)').matches
+  var isNotSpecified = window.matchMedia('(prefers-color-scheme: no-preference)').matches
+  var hasNoSupport = !isDarkMode && !isLightMode && !isNotSpecified
+
+  if (t === undefined) {
+    if (isLightMode) activateLightMode()
+    else if (isDarkMode) activateDarkMode()
+    else if (isNotSpecified || hasNoSupport) {
+      console.log('You specified no preference for a color scheme or your browser does not support it. I Schedule dark mode during night time.')
+      var now = new Date()
+      var hour = now.getHours()
+      var isNight = hour <= 6 || hour >= 18
+      isNight ? activateDarkMode() : activateLightMode()
+    }
+    window.matchMedia('(prefers-color-scheme: dark)').addListener(function (e) {
+      if (Cookies.get('theme') === undefined) {
+        e.matches ? activateDarkMode() : activateLightMode()
+      }
+    })
+  } else if (t === 'light') activateLightMode()
+  else activateDarkMode()
+} else if (autoChangeMode === '2') {
+  now = new Date()
+  hour = now.getHours()
+  isNight = hour <= 6 || hour >= 18
+  if (t === undefined) isNight ? activateDarkMode() : activateLightMode()
+  else if (t === 'light') activateLightMode()
+  else activateDarkMode()
+} else {
+  if (t === 'dark') activateDarkMode()
+  else if (t === 'light') activateLightMode()
+}</script><link rel="stylesheet" href="/css/index.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free/css/all.min.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fancyapps/fancybox@latest/dist/jquery.fancybox.min.css"><link rel="prev" title="SpringCloud系列之--Zuul高级配置(下)" href="https://coder.mtracy.club/2020/07/18/springcloud08/"><link rel="next" title="SpringCloud系列之--Zuul路由和过滤" href="https://coder.mtracy.club/2020/07/18/springcloud06/"><link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Titillium+Web&amp;display=swap"><script>var GLOBAL_CONFIG = { 
+  root: '/',
+  algolia: undefined,
+  localSearch: {"path":"search.xml","languages":{"hits_empty":"找不到您查询的内容:${query}"}},
+  translate: {"defaultEncoding":1,"translateDelay":0,"msgToTraditionalChinese":"繁","msgToSimplifiedChinese":"簡"},
+  copy: {
+    success: '复制成功',
+    error: '复制错误',
+    noSupport: '浏览器不支持'
+  },
+  bookmark: {
+    message_prev: '按',
+    message_next: '键将本页加入书签'
+  },
+  runtime_unit: '天',
+  runtime: true,
+  copyright: undefined,
+  ClickShowText: {"text":"I,LOVE,YOU","fontSize":"15px"},
+  medium_zoom: false,
+  fancybox: true,
+  Snackbar: undefined,
+  justifiedGallery: {
+    js: 'https://cdn.jsdelivr.net/npm/justifiedGallery/dist/js/jquery.justifiedGallery.min.js',
+    css: 'https://cdn.jsdelivr.net/npm/justifiedGallery/dist/css/justifiedGallery.min.css'
+  },
+  baiduPush: false,
+  highlightCopy: true,
+  highlightLang: true,
+  isPhotoFigcaption: false,
+  islazyload: true,
+  isanchor: false    
+}</script><script>var GLOBAL_CONFIG_SITE = { 
+  isPost: true,
+  isHome: false,
+  isHighlightShrink: false,
+  isSidebar: true
+  }</script><noscript><style>
+#nav {
+  opacity: 1
+}
+.justified-gallery img{
+  opacity: 1
+}
+</style></noscript><meta name="generator" content="Hexo 4.2.1"></head><body><div id="mobile-sidebar"><div id="menu_mask"></div><div id="mobile-sidebar-menus"><div class="mobile_author_icon"><img class="avatar-img" src="http://pengjunlee.3vzhuji.net/static/img/avatar.png" onerror="onerror=null;src='http://pengjunlee.3vzhuji.net/static/img/cover1.jpg'" alt="avatar"/></div><div class="mobile_post_data"><div class="mobile_data_item is-center"><div class="mobile_data_link"><a href="/archives/"><div class="headline">文章</div><div class="length_num">86</div></a></div></div><div class="mobile_data_item is-center">      <div class="mobile_data_link"><a href="/tags/"><div class="headline">标签</div><div class="length_num">6</div></a></div></div><div class="mobile_data_item is-center">     <div class="mobile_data_link"><a href="/categories/"><div class="headline">分类</div><div class="length_num">7</div></a></div></div></div><hr/><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> 首页</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> 时间轴</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> 标签</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> 分类</span></a></div><div class="menus_item"><a class="site-page" href="/link/"><i class="fa-fw fas fa-link"></i><span> 友链</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-heart"></i><span> 关于</span></a></div></div></div></div><i class="fas fa-arrow-right on" id="toggle-sidebar"></i><div id="sidebar"><div class="sidebar-toc"><div class="sidebar-toc__title">目录</div><div class="sidebar-toc__progress"><span class="progress-notice">你已经读了</span><span class="progress-num">0</span><span class="progress-percentage">%</span><div class="sidebar-toc__progress-bar">     </div></div><div class="sidebar-toc__content"><ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#自定义路由规则"><span class="toc-number">1.</span> <span class="toc-text">自定义路由规则</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#设置请求头"><span class="toc-number">2.</span> <span class="toc-text">设置请求头</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#管理终端"><span class="toc-number">3.</span> <span class="toc-text">管理终端</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#编码设置"><span class="toc-number">4.</span> <span class="toc-text">编码设置</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#禁用Zuul过滤器"><span class="toc-number">5.</span> <span class="toc-text">禁用Zuul过滤器</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#超时设置"><span class="toc-number">6.</span> <span class="toc-text">超时设置</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#参考文章"><span class="toc-number">7.</span> <span class="toc-text">参考文章</span></a></li></ol></div></div></div><div id="body-wrap"><header class="post-bg" id="page-header" style="background-image: url(http://pengjunlee.3vzhuji.net/static/img/top_img7.jpg)"><nav id="nav"><span class="pull-left" id="blog_name"><a class="blog_title" id="site-name" href="/">李朋军的个人博客</a></span><span class="pull-right menus"><div id="search_button"><a class="site-page social-icon search"><i class="fas fa-search fa-fw"></i><span> 搜索</span></a></div><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> 首页</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> 时间轴</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> 标签</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> 分类</span></a></div><div class="menus_item"><a class="site-page" href="/link/"><i class="fa-fw fas fa-link"></i><span> 友链</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-heart"></i><span> 关于</span></a></div></div><span class="toggle-menu close"><a class="site-page"><i class="fas fa-bars fa-fw"></i></a></span></span></nav><div id="post-info"><div id="post-title"><div class="posttitle">SpringCloud系列之--Zuul高级配置(上)</div></div><div id="post-meta"><div class="meta-firstline"><time class="post-meta__date"><span class="post-meta__date-created" title="发表于 2020-07-18 14:07:00"><i class="far fa-calendar-alt fa-fw"></i> 发表于 2020-07-18</span><span class="post-meta__separator">|</span><span class="post-meta__date-updated" title="更新于 2020-07-18 14:07:00"><i class="fas fa-history fa-fw"></i> 更新于 2020-07-18</span></time><span class="post-meta__categories"><span class="post-meta__separator">|</span><i class="fas fa-inbox fa-fw post-meta__icon"></i><a class="post-meta__categories" href="/categories/SpringCloud/">SpringCloud</a></span></div><div class="meta-secondline"> </div><div class="meta-thirdline"><span class="post-meta-pv-cv"><i class="far fa-eye fa-fw post-meta__icon"></i><span>阅读量:</span><span id="busuanzi_value_page_pv"></span></span><span class="post-meta-commentcount"></span></div></div></div></header><main class="layout_post" id="content-inner"><article id="post"><div class="post-content" id="article-container"><h1 id="自定义路由规则"><a href="#自定义路由规则" class="headerlink" title="自定义路由规则"></a>自定义路由规则</h1><p>在《Zuul路由和过滤》一章中，我们并未对Zuul的路由规则进行设置，默认会使用服务的 ID 对服务进行路由，即：在源服务的URI之前增加 /service-id 前缀。</p>
+<pre><code># Zuul 默认路由地址
+http://&lt;zuul-host&gt;:&lt;zuul-port&gt;/service-id/[service-URI]</code></pre><p>除了可以直接使用默认的路由规则外，Zuul还提供了很多配置项允许我们对路由映射规则进行自定义，例如：</p>
+<figure class="highlight yml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="attr">zuul:</span></span><br><span class="line">  <span class="attr">ignoredServices:</span> <span class="string">'*'</span></span><br><span class="line">  <span class="attr">routes:</span></span><br><span class="line">    <span class="attr">message-service:</span> <span class="string">/zuul-msg/**</span></span><br></pre></td></tr></table></figure>
+<p>示例中这个配置的作用是：忽略除 message-service 外的所有服务（不对它们进行路由），只将message-service 服务路由到 /zuul-msg/** 地址上。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">zuul.ignored-services  # 忽略指定微服务，多个微服务之间使用逗号分隔</span><br><span class="line">zuul.routes.service-id # 指定service-id服务的路由地址</span><br></pre></td></tr></table></figure>
+<blockquote>
+<p><font color=red>注意：在 zuul.routes 中配置了的服务，即使被包含在 zuul.ignored-services 配置中也不会被忽略。</font></p>
+</blockquote>
+<p>若将上例中的配置改成如下，则表示除 message-service 外的所有服务都使用默认的路由规则。</p>
+<figure class="highlight yml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="attr">zuul:</span></span><br><span class="line">  <span class="attr">routes:</span></span><br><span class="line">    <span class="attr">message-service:</span> <span class="string">/zuul-msg/**</span></span><br></pre></td></tr></table></figure>
+<p>如果你希望对某一个路由进行更精细的控制，可以独立地指定该服务的路由地址和它的service-id，例如：</p>
+<figure class="highlight yml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="attr">zuul:</span></span><br><span class="line">  <span class="attr">routes:</span></span><br><span class="line">    <span class="attr">message:</span> </span><br><span class="line">      <span class="attr">path:</span> <span class="string">/zuul-msg/**</span></span><br><span class="line">      <span class="attr">serviceId:</span> <span class="string">message-service</span></span><br></pre></td></tr></table></figure>
+<p>或者，像下面这样指定一个该服务的物理地址来替代上例中的service-id：</p>
+<figure class="highlight yml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="attr">zuul:</span></span><br><span class="line">  <span class="attr">routes:</span></span><br><span class="line">    <span class="attr">message:</span> </span><br><span class="line">      <span class="attr">path:</span> <span class="string">/zuul-msg/**</span></span><br><span class="line">      <span class="attr">url:</span> <span class="string">http://localhost:8771/</span></span><br></pre></td></tr></table></figure>
+<p>连续多次访问 <a href="http://localhost:8791/zuul-msg/api/v1/msg/get" target="_blank" rel="noopener">http://localhost:8791/zuul-msg/api/v1/msg/get</a> 返回结果相同，见下图：</p>
+<div align=center>
+
+<p><img src= "/img/loading.gif" data-src="http://pengjunlee.3vzhuji.net/static/springcloud/21.png" alt="Zuul示意图" title="Zuul示意图"></p>
+<div align=left>
+
+
+<p>可以看出，通过url配置的路由不会被当作HystrixCommand执行，自然也就不会使用Ribbon在多个Url之间进行负载均衡。所以，推荐使用serviceId进行配置。或者，指定一个包含有多个可用服务列表的serviceId，例如：</p>
+<figure class="highlight yml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><span class="line"><span class="attr">zuul:</span></span><br><span class="line">  <span class="attr">routes:</span></span><br><span class="line">    <span class="attr">message:</span> </span><br><span class="line">      <span class="attr">path:</span> <span class="string">/zuul-msg/**</span></span><br><span class="line">      <span class="attr">serviceId:</span> <span class="string">msg-servers</span></span><br><span class="line">      </span><br><span class="line"><span class="attr">hystrix:</span></span><br><span class="line">  <span class="attr">command:</span></span><br><span class="line">    <span class="attr">msg-servers:</span></span><br><span class="line">      <span class="attr">execution:</span></span><br><span class="line">        <span class="attr">isolation:</span></span><br><span class="line">          <span class="attr">thread:</span></span><br><span class="line">            <span class="attr">timeoutInMilliseconds:</span> <span class="number">1000</span></span><br><span class="line">      </span><br><span class="line"><span class="attr">msg-servers:</span></span><br><span class="line">  <span class="attr">ribbon:</span></span><br><span class="line">    <span class="attr">NIWSServerListClassName:</span> <span class="string">com.netflix.loadbalancer.ConfigurationBasedServerList</span></span><br><span class="line">    <span class="attr">listOfServers:</span> <span class="string">http://localhost:8771/,http://localhost:8772/</span></span><br><span class="line">    <span class="attr">ConnectTimeout:</span> <span class="number">1000</span></span><br><span class="line">    <span class="attr">ReadTimeout:</span> <span class="number">3000</span></span><br><span class="line">    <span class="attr">MaxTotalHttpConnections:</span> <span class="number">500</span></span><br><span class="line">    <span class="attr">MaxConnectionsPerHost:</span> <span class="number">100</span></span><br></pre></td></tr></table></figure>
+<p>还有另外一种方法也可以达到上述目标：使用service-id为要路由的服务指定一个Ribbon客户端，并设置Ribbon禁用Eureka，例如：</p>
+<figure class="highlight yml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="attr">zuul:</span></span><br><span class="line">  <span class="attr">routes:</span></span><br><span class="line">    <span class="attr">message:</span> </span><br><span class="line">      <span class="attr">path:</span> <span class="string">/zuul-msg/**</span></span><br><span class="line">      <span class="attr">serviceId:</span> <span class="string">msg-servers</span></span><br><span class="line">      </span><br><span class="line"><span class="attr">ribbon:</span></span><br><span class="line">  <span class="attr">eureka:</span></span><br><span class="line">    <span class="attr">enabled:</span> <span class="literal">false</span></span><br><span class="line"> </span><br><span class="line"><span class="attr">msg-servers:</span></span><br><span class="line">  <span class="attr">ribbon:</span></span><br><span class="line">    <span class="attr">listOfServers:</span> <span class="string">http://localhost:8771/,http://localhost:8772/</span></span><br></pre></td></tr></table></figure>
+<p>如果你的service-id命名满足一定的规则，可以使用正则表达式从service-id中提取一些变量作为你的路由地址，例如：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@Bean</span></span><br><span class="line"><span class="function"><span class="keyword">public</span> PatternServiceRouteMapper <span class="title">serviceRouteMapper</span><span class="params">()</span> </span>&#123;</span><br><span class="line">	<span class="keyword">return</span> <span class="keyword">new</span> PatternServiceRouteMapper(<span class="string">"(?&lt;name&gt;^.+)-(?&lt;version&gt;v.+$)"</span>, <span class="string">"$&#123;version&#125;/$&#123;name&#125;"</span>);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>在这个示例中，一个名称为myusers-v1的服务会被路由到 /v1/myusers/** 地址上。在这里你可以使用任意正则表达式，但是要保证所有的命名组必须都包含servicePattern和routePattern两部分。如果servicePattern不匹配service-id，就会使用默认的规则，即在服务原有的URI之前增加 /service-id 前缀。Zuul的这一特性默认是关闭的，而且只能被应用到已经发现的服务。</p>
+<p>对那些要忽略的微服务也可以采用模式匹配进行更加精细的控制，例如：</p>
+<figure class="highlight yml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="attr">zuul:</span></span><br><span class="line">  <span class="attr">ignoredPatterns:</span> <span class="string">/**/v2/**</span></span><br><span class="line">  <span class="attr">routes:</span></span><br><span class="line">    <span class="attr">message-service:</span> <span class="string">/zuul-msg/**</span></span><br></pre></td></tr></table></figure>
+<p>该例中的配置会忽略所有包含 /v2/ 的请求。 </p>
+<p>使用 zuul.prefix 配置项可以为所有的路由地址都添加一个前缀，例如 /abc 。</p>
+<figure class="highlight yml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="attr">zuul:</span></span><br><span class="line">  <span class="attr">prefix:</span> <span class="string">/abc</span></span><br><span class="line">  <span class="attr">routes:</span></span><br><span class="line">    <span class="attr">message-service:</span> <span class="string">/zuul-msg/**</span></span><br></pre></td></tr></table></figure>
+<p>添加前缀之后路由地址为：<a href="http://localhost:8791/abc/zuul-msg/api/v1/msg/get" target="_blank" rel="noopener">http://localhost:8791/abc/zuul-msg/api/v1/msg/get</a> 。 </p>
+<div align=center>
+
+<p><img src= "/img/loading.gif" data-src="http://pengjunlee.3vzhuji.net/static/springcloud/22.png" alt="Zuul示意图" title="Zuul示意图"></p>
+<div align=left>
+
+<p>默认情况下，Zuul代理会在将请求转发出去之前先将其中的前缀字符串剔除掉。如果你不想剔除前缀，可以设置 zuul.stripPrefix=false。如果你只是想不剔除指定某一个服务中的前缀，可以使用如下配置：</p>
+<figure class="highlight yml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="attr">zuul:</span></span><br><span class="line">  <span class="attr">prefix:</span> <span class="string">/abc</span></span><br><span class="line">  <span class="comment"># stripPrefix: false</span></span><br><span class="line">  <span class="attr">routes:</span></span><br><span class="line">    <span class="attr">message-service:</span> <span class="string">/zuul-msg/**</span></span><br><span class="line">    <span class="attr">stripPrefix:</span> <span class="literal">false</span></span><br></pre></td></tr></table></figure>
+<p>zuul.routes 中的配置条目最终都会被绑定到一个ZuulProperties类型的对象，在 ZuulProperties 中还有一个 retryable 标识，将该标识设置成 ture 能够让Ribbon客户端对失败的请求自动进行重试。</p>
+<p>zuul.routes 中配置的路由地址最终都会被存储在一个Map中，路由的地址即为Map的key，Map的value是一个ZuulRoute类型的对象。在yaml配置文件中，路由地址相同的两个服务，后面的会覆盖前面的配置，从而导致先配置的服务不可用。</p>
+<blockquote>
+<p><font color=red><strong>注意</strong>：如果需要保留路由的顺序，需要使用yaml文件，因为使用properties文件时会丢失顺序。</font></p>
+</blockquote>
+<p>目前，Zuul已经使用 Apache HTTP Client 替换掉了已经过时的Ribbon RestClient 来作为自己的HTTP Client。你若想继续使用 RestClient 或者 okhttp3.OkHttpClient，只需要将 ribbon.restclient.enabled 或者 ribbon.okhttp.enabled 设置为 true 即可。当然，你也可以使用自定义的 Apache HTTP client 或者 OK HTTP client，提供一个相应的 ClosableHttpClient 或者OkHttpClient 类型的 Bean即可。</p>
+<h1 id="设置请求头"><a href="#设置请求头" class="headerlink" title="设置请求头"></a>设置请求头</h1><p>默认情况下，Zuul会为转发的请求添加一些 X-Forwarded-* 请求头，可以通过配置项 zuul.addProxyHeaders = false 来关闭它。请求中的前缀默认会被剔除，同样地，请求中的X-Forwarded-Prefix 请求头也会被摘取出来。</p>
+<p>在同一个系统中，请求头在多个服务之间是可以共享的，但是你可能并不希望某些敏感的请求头信息泄露到下游的外部服务器，你可以把这些敏感请求头配置到zuul.sensitiveHeaders列表，从而禁止它们被传递到下游。例如：</p>
+<figure class="highlight yml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="attr">zuul:</span></span><br><span class="line">  <span class="attr">sensitiveHeaders:</span> <span class="string">Cookie,Set-Cookie,Authorization</span></span><br><span class="line">  <span class="attr">routes:</span></span><br><span class="line">    <span class="attr">message-service:</span> <span class="string">/zuul-msg/**</span></span><br><span class="line">    <span class="attr">sensitiveHeaders:</span> <span class="string">token</span></span><br></pre></td></tr></table></figure>
+<p>sensitiveHeaders就相当于是一个向下游传递的请求头黑名单，默认包含了 Cookie，Set-Cookie和Authorization三个请求头。因此，如果你需要向下传递所有的请求头信息，需要明确地把sensitiveHeaders设置成一个空列表，如下：</p>
+<figure class="highlight yml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="attr">zuul:</span></span><br><span class="line">  <span class="attr">sensitiveHeaders:</span> </span><br><span class="line">  <span class="attr">routes:</span></span><br><span class="line">    <span class="attr">message-service:</span> <span class="string">/zuul-msg/**</span></span><br></pre></td></tr></table></figure>
+<p>另外，你还可以把那些不需要传递到下游的请求头或响应头配置到 zuul.ignoredHeaders 中，可以达到相同的作用。默认情况下，当类路径中不包含 Spring Security 时，ignoredHeaders 列表是空的；当类路径中包含 Spring Security时，ignoredHeaders 列表会被初始化包含一些由Spring Security指定的 security 头信息，例如 involving caching。这种情况下如果你需要把这些 security 头信息传递到下游，可以添加 zuul.ignoreSecurityHeaders = false 配置项。</p>
+<h1 id="管理终端"><a href="#管理终端" class="headerlink" title="管理终端"></a>管理终端</h1><p>默认情况下，当@EnableZuulProxy与Actuator一起使用时，Actuator健康监控页面会增加两个终端：Routes和Filters。</p>
+<p>需要在pom.xml中引入Actuator依赖：</p>
+<figure class="highlight html"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">&lt;!-- Actuator 依赖 --&gt;</span></span><br><span class="line"><span class="tag">&lt;<span class="name">dependency</span>&gt;</span></span><br><span class="line">	<span class="tag">&lt;<span class="name">groupId</span>&gt;</span>org.springframework.boot<span class="tag">&lt;/<span class="name">groupId</span>&gt;</span></span><br><span class="line">	<span class="tag">&lt;<span class="name">artifactId</span>&gt;</span>spring-boot-starter-actuator<span class="tag">&lt;/<span class="name">artifactId</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">dependency</span>&gt;</span></span><br></pre></td></tr></table></figure>
+<p>并在application.yml文件中增加配置：</p>
+<figure class="highlight yml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="attr">management:</span></span><br><span class="line">  <span class="attr">security:</span></span><br><span class="line">    <span class="attr">enabled:</span> <span class="literal">false</span></span><br><span class="line">  <span class="attr">endpoints:</span></span><br><span class="line">    <span class="attr">web:</span></span><br><span class="line">      <span class="attr">exposure:</span></span><br><span class="line">        <span class="attr">include:</span> <span class="string">hystrix.stream,*</span></span><br></pre></td></tr></table></figure>
+<p>访问 /actuator/routes 终端会返回一个映射路由的列表，如下图。</p>
+<div align=center>
+
+<p><img src= "/img/loading.gif" data-src="http://pengjunlee.3vzhuji.net/static/springcloud/23.png" alt="Zuul示意图" title="Zuul示意图"></p>
+<div align=left>
+
+
+
+<p>访问 /actuator/routes/details 终端会返回一个映射路由的详细信息列表，如下图。</p>
+<div align=center>
+
+<p><img src= "/img/loading.gif" data-src="http://pengjunlee.3vzhuji.net/static/springcloud/24.png" alt="Zuul示意图" title="Zuul示意图"></p>
+<div align=left>
+
+
+<p>访问 /actuator/filters 终端会返回一个包含了过滤器类型和配置的Map对象。</p>
+<div align=center>
+
+<p><img src= "/img/loading.gif" data-src="http://pengjunlee.3vzhuji.net/static/springcloud/25.png" alt="Zuul示意图" title="Zuul示意图"></p>
+<div align=left>
+
+<h1 id="编码设置"><a href="#编码设置" class="headerlink" title="编码设置"></a>编码设置</h1><p>在对进来的请求进行处理的时候，请求参数会被解码以便在Zuul过滤器中能够对它们进行一些修改，然后又会在路由过滤器中重新编码并发送出去，重新编码后的结果跟原来的输入可能会有所不同，这在多数情况下是没什么问题的，但是在一些对复杂的请求字符串编码比较挑剔的Web服务器中仍有可能会出问题。解决的办法就是添加如下的配置来强制使用原始编码的请求字符串，相当于直接使用 HttpServletRequest.getQueryString()方法来获取请求字符串。</p>
+<p>在对进来的请求进行处理的时候，会先对请求的URI进行解码，再和路由地址进行匹配，然后又会在路由过滤器中对请求的URI重新编码并发送给后端，当你的URI中包含 “/” 字符时这可能会引发一些意想不到的问题。解决的办法就是添加如下的配置来强制使用原始编码的请求URI，相当于直接使用 HttpServletRequest.getRequestURI()方法来获取请求URI。</p>
+<h1 id="禁用Zuul过滤器"><a href="#禁用Zuul过滤器" class="headerlink" title="禁用Zuul过滤器"></a>禁用Zuul过滤器</h1><p>Spring Cloud的Zuul自带了一些过滤器Bean，默认情况下它们都是启用的。如果你想禁用其中的某一个过滤器，可以使用如下配置：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">zuul.&lt;SimpleClassName&gt;.&lt;filterType&gt;.disable&#x3D;true</span><br></pre></td></tr></table></figure>
+<p>按照惯例，过滤器所在包名中 “filters” 字符串后面的就是过滤器的类型了，例如，禁用 <code>org.springframework.cloud.netflix.zuul.filters.post.SendResponseFilter</code> ，配置如下：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">zuul.SendResponseFilter.post.disable&#x3D;true</span><br></pre></td></tr></table></figure>
+
+<h1 id="超时设置"><a href="#超时设置" class="headerlink" title="超时设置"></a>超时设置</h1><ul>
+<li>如果你需要设置通过Zuul路由的请求的Socket超时时间和Read超时时间，有两种配置方法，需要根据你的配置情况进行选择：</li>
+<li>如果使用了服务发现，使用ribbon.ReadTimeout 和 ribbon.SocketTimeout 进行配置。</li>
+<li>如果是通过指定URL的方式进行路由，使用zuul.host.connect-timeout-millis 和 zuul.host.socket-timeout-millis进行配置。</li>
+</ul>
+<h1 id="参考文章"><a href="#参考文章" class="headerlink" title="参考文章"></a>参考文章</h1><p><a href="https://github.com/spring-projects/spring-retry" target="_blank" rel="noopener">https://github.com/spring-projects/spring-retry</a></p>
+<p><a href="https://cloud.spring.io/spring-cloud-netflix/single/spring-cloud-netflix.html#netflix-zuul-starter" target="_blank" rel="noopener">https://cloud.spring.io/spring-cloud-netflix/single/spring-cloud-netflix.html#netflix-zuul-starter</a></p>
+</div><div class="post-copyright"><div class="post-copyright__author"><span class="post-copyright-meta">文章作者: </span><span class="post-copyright-info"><a href="mailto:pengjunlee@163.com">pengjunlee</a></span></div><div class="post-copyright__type"><span class="post-copyright-meta">文章链接: </span><span class="post-copyright-info"><a href="https://coder.mtracy.club/2020/07/18/springcloud07/">https://coder.mtracy.club/2020/07/18/springcloud07/</a></span></div><div class="post-copyright__notice"><span class="post-copyright-meta">版权声明: </span><span class="post-copyright-info">本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" target="_blank">CC BY-NC-SA 4.0</a> 许可协议。转载请注明来自 <a href="https://coder.mtracy.club" target="_blank">李朋军的个人博客</a>！</span></div></div><div class="tag_share"><div class="post_share"><div class="social-share" data-image="http://pengjunlee.3vzhuji.net/static/img/top_img1.jpg" data-sites="facebook,twitter,wechat,weibo,qq"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/social-share.js/dist/css/share.min.css"/><script src="https://cdn.jsdelivr.net/npm/social-share.js/dist/js/social-share.min.js"></script></div></div><div class="post-reward"><button class="reward-button"><i class="fas fa-qrcode"></i> 打赏<div class="reward-main"><ul class="reward-all"><li class="reward-item"><img class="post-qr-code__img" src="http://pengjunlee.3vzhuji.net/static/img/WeChanQR.jpg" alt="微信支付" onclick="window.open('http://pengjunlee.3vzhuji.net/static/img/WeChanQR.jpg')"/><div class="post-qr-code__desc">微信支付</div></li><li class="reward-item"><img class="post-qr-code__img" src="http://pengjunlee.3vzhuji.net/static/img/AliPayQR.jpg" alt="支付宝" onclick="window.open('http://pengjunlee.3vzhuji.net/static/img/AliPayQR.jpg')"/><div class="post-qr-code__desc">支付宝</div></li></ul></div></button></div><nav class="pagination-post" id="pagination"><div class="prev-post pull-left"><a href="/2020/07/18/springcloud08/"><img class="prev-cover" data-src="http://pengjunlee.3vzhuji.net/static/img/top_img8.jpg" onerror="onerror=null;src='http://pengjunlee.3vzhuji.net/static/img/cover2.jpg'"><div class="pagination-info"><div class="label">上一篇</div><div class="prev_info">SpringCloud系列之--Zuul高级配置(下)</div></div></a></div><div class="next-post pull-right"><a href="/2020/07/18/springcloud06/"><img class="next-cover" data-src="http://pengjunlee.3vzhuji.net/static/img/top_img6.jpg" onerror="onerror=null;src='http://pengjunlee.3vzhuji.net/static/img/cover2.jpg'"><div class="pagination-info"><div class="label">下一篇</div><div class="next_info">SpringCloud系列之--Zuul路由和过滤</div></div></a></div></nav><div class="relatedPosts"><div class="relatedPosts_headline"><i class="fas fa-thumbs-up fa-fw"></i><span> 相关推荐</span></div><div class="relatedPosts_list"><div class="relatedPosts_item"><a href="/2020/07/18/springcloud01/" title="SpringCloud系列之--CAP定理"><img class="relatedPosts_cover" data-src="http://pengjunlee.3vzhuji.net/static/img/top_img1.jpg"><div class="relatedPosts_main is-center"><div class="relatedPosts_date"><i class="far fa-calendar-alt fa-fw"></i> 2020-07-18</div><div class="relatedPosts_title">SpringCloud系列之--CAP定理</div></div></a></div><div class="relatedPosts_item"><a href="/2020/07/18/springcloud02/" title="SpringCloud系列之--Eureka服务注册中心"><img class="relatedPosts_cover" data-src="http://pengjunlee.3vzhuji.net/static/img/top_img2.jpg"><div class="relatedPosts_main is-center"><div class="relatedPosts_date"><i class="far fa-calendar-alt fa-fw"></i> 2020-07-18</div><div class="relatedPosts_title">SpringCloud系列之--Eureka服务注册中心</div></div></a></div><div class="relatedPosts_item"><a href="/2020/07/18/springcloud04/" title="SpringCloud系列之--Feign模拟RPC调用"><img class="relatedPosts_cover" data-src="http://pengjunlee.3vzhuji.net/static/img/top_img4.jpg"><div class="relatedPosts_main is-center"><div class="relatedPosts_date"><i class="far fa-calendar-alt fa-fw"></i> 2020-07-18</div><div class="relatedPosts_title">SpringCloud系列之--Feign模拟RPC调用</div></div></a></div><div class="relatedPosts_item"><a href="/2020/07/18/springcloud08/" title="SpringCloud系列之--Zuul高级配置(下)"><img class="relatedPosts_cover" data-src="http://pengjunlee.3vzhuji.net/static/img/top_img8.jpg"><div class="relatedPosts_main is-center"><div class="relatedPosts_date"><i class="far fa-calendar-alt fa-fw"></i> 2020-07-18</div><div class="relatedPosts_title">SpringCloud系列之--Zuul高级配置(下)</div></div></a></div><div class="relatedPosts_item"><a href="/2020/07/18/springcloud05/" title="SpringCloud系列之--Hystrix服务熔断与降级"><img class="relatedPosts_cover" data-src="http://pengjunlee.3vzhuji.net/static/img/top_img5.jpg"><div class="relatedPosts_main is-center"><div class="relatedPosts_date"><i class="far fa-calendar-alt fa-fw"></i> 2020-07-18</div><div class="relatedPosts_title">SpringCloud系列之--Hystrix服务熔断与降级</div></div></a></div><div class="relatedPosts_item"><a href="/2020/07/18/springcloud09/" title="SpringCloud系列之--Sleuth+Zipkin链路追踪"><img class="relatedPosts_cover" data-src="http://pengjunlee.3vzhuji.net/static/img/top_img9.jpg"><div class="relatedPosts_main is-center"><div class="relatedPosts_date"><i class="far fa-calendar-alt fa-fw"></i> 2020-07-18</div><div class="relatedPosts_title">SpringCloud系列之--Sleuth+Zipkin链路追踪</div></div></a></div></div></div><hr><div id="post-comment"><div class="comment_headling"><i class="fas fa-comments fa-fw"></i><span> 评论</span></div><div class="vcomment" id="vcomment"></div><script src="https://cdn.jsdelivr.net/npm/valine/dist/Valine.min.js"></script><script>var requestSetting = function (from,set) {
+  var from = from
+  var setting = set.split(',').filter(function(item){
+  return from.indexOf(item) > -1
+  });
+  setting = setting.length == 0 ? from :setting;
+  return setting
+}
+
+var guestInfo = requestSetting(['nick','mail','link'],'nick,mail,link')
+var requiredFields = requestSetting(['nick','mail'],'nick,mail')
+
+window.valine = new Valine({
+  el:'#vcomment',
+  appId: 'k0QcRvFFw7AovKS8un6pys2S-gzGzoHsz',
+  appKey: 'Y5w42nyHhdKlYHT00svHuIya',
+  placeholder: 'Please leave your footprints',
+  avatar: 'monsterid',
+  meta: guestInfo,
+  pageSize: '10',
+  lang: 'zh-CN',
+  recordIP: false,
+  serverURLs: '',
+  emojiCDN: '',
+  emojiMaps: "",
+  enableQQ: false,
+  requiredFields: requiredFields
+});</script></div></article></main><footer id="footer" style="background-image: url(http://pengjunlee.3vzhuji.net/static/img/top_img7.jpg)" data-type="photo"><div id="footer-wrap"><div class="copyright">&copy;2020 By pengjunlee</div><div class="framework-info"><span>驱动 </span><a href="https://hexo.io" target="_blank" rel="noopener"><span>Hexo</span></a><span class="footer-separator">|</span><span>主题 </span><a href="https://github.com/jerryc127/hexo-theme-butterfly" target="_blank" rel="noopener"><span>Butterfly</span></a></div></div></footer></div><section class="rightside" id="rightside"><div id="rightside-config-hide"><button id="readmode" title="阅读模式"><i class="fas fa-book-open"></i></button><button id="font_plus" title="放大字体"><i class="fas fa-plus"></i></button><button id="font_minus" title="缩小字体"><i class="fas fa-minus"></i></button><button class="translate_chn_to_cht" id="translateLink" title="简繁转换">簡</button><button id="darkmode" title="浅色和深色模式转换"><i class="fas fa-adjust"></i></button></div><div id="rightside-config-show"><button id="rightside_config" title="设置"><i class="fas fa-cog"></i></button><a id="to_comment" href="#post-comment" title="直达评论"><i class="scroll_to_comment fas fa-comments"></i></a><button class="close" id="mobile-toc-button" title="目录"><i class="fas fa-list-ul"></i></button><button id="go-up" title="回到顶部"><i class="fas fa-arrow-up"></i></button></div></section><div class="search-dialog" id="local-search"><div class="search-dialog__title" id="local-search-title">本地搜索</div><div id="local-input-panel"><div id="local-search-input"><div class="local-search-box"><input class="local-search-box--input" placeholder="搜索文章" type="text"/></div></div></div><hr/><div id="local-search-results"><div id="local-hits"></div><div id="local-stats"><div class="local-search-stats__hr" id="hr"><span>由</span> <a href="https://github.com/wzpan/hexo-generator-search" target="_blank" rel="noopener" style="color:#49B1F5;">hexo-generator-search</a>
+ <span>提供支持</span></div></div></div><span class="search-close-button"><i class="fas fa-times"></i></span></div><div class="search-mask"></div><script src="https://cdn.jsdelivr.net/npm/jquery@latest/dist/jquery.min.js"></script><script src="/js/utils.js"></script><script src="/js/main.js"></script><script src="/js/tw_cn.js"></script><script src="https://cdn.jsdelivr.net/npm/@fancyapps/fancybox@latest/dist/jquery.fancybox.min.js"></script><script defer id="ribbon" src="/js/third-party/canvas-ribbon.js" size="150" alpha="0.6" zIndex="-1" mobile="false" data-click="false"></script><script async src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script><script src="https://cdn.jsdelivr.net/npm/instant.page/instantpage.min.js" type="module" defer></script><script src="https://cdn.jsdelivr.net/npm/vanilla-lazyload/dist/lazyload.iife.min.js" async></script><script src="/js/third-party/ClickShowText.js"></script><script src="/js/search/local-search.js"></script></body></html>

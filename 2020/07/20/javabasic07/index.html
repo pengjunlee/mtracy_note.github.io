@@ -1,0 +1,198 @@
+<!DOCTYPE html><html lang="zh-CN" data-theme="light"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Java知识点系列之--使用lombok消除冗余代码 | 李朋军的个人博客</title><meta name="description" content="如何使用lombok消除冗余代码？"><meta name="keywords" content="Java, 知识点"><meta name="author" content="pengjunlee,pengjunlee@163.com"><meta name="copyright" content="pengjunlee"><meta name="format-detection" content="telephone=no"><link rel="shortcut icon" href="http://pengjunlee.3vzhuji.net/static/img/favicon.ico"><link rel="canonical" href="https://coder.mtracy.club/2020/07/20/javabasic07/"><meta http-equiv="Cache-Control" content="no-transform"><meta http-equiv="Cache-Control" content="no-siteapp"><link rel="preconnect" href="//cdn.jsdelivr.net"/><link rel="preconnect" href="//fonts.googleapis.com" crossorigin="crossorigin"/><link rel="preconnect" href="//busuanzi.ibruce.info"/><meta property="og:type" content="article"><meta property="og:title" content="Java知识点系列之--使用lombok消除冗余代码"><meta property="og:url" content="https://coder.mtracy.club/2020/07/20/javabasic07/"><meta property="og:site_name" content="李朋军的个人博客"><meta property="og:description" content="如何使用lombok消除冗余代码？"><meta property="og:image" content="http://pengjunlee.3vzhuji.net/static/img/top_img7.jpg"><meta property="article:published_time" content="2020-07-20T13:07:00.000Z"><meta property="article:modified_time" content="2020-07-20T13:07:00.000Z"><meta name="twitter:card" content="summary"><script>var activateDarkMode = function () {
+  document.documentElement.setAttribute('data-theme', 'dark')
+  if (document.querySelector('meta[name="theme-color"]') !== null) {
+    document.querySelector('meta[name="theme-color"]').setAttribute('content', '#000')
+  }
+}
+var activateLightMode = function () {
+  document.documentElement.setAttribute('data-theme', 'light')
+  if (document.querySelector('meta[name="theme-color"]') !== null) {
+    document.querySelector('meta[name="theme-color"]').setAttribute('content', '#fff')
+  }
+}
+
+var getCookies = function (name) {
+  const value = `; ${document.cookie}`
+  const parts = value.split(`; ${name}=`)
+  if (parts.length === 2) return parts.pop().split(';').shift()
+}
+
+var autoChangeMode = 'false'
+var t = getCookies('theme')
+if (autoChangeMode === '1') {
+  var isDarkMode = window.matchMedia('(prefers-color-scheme: dark)').matches
+  var isLightMode = window.matchMedia('(prefers-color-scheme: light)').matches
+  var isNotSpecified = window.matchMedia('(prefers-color-scheme: no-preference)').matches
+  var hasNoSupport = !isDarkMode && !isLightMode && !isNotSpecified
+
+  if (t === undefined) {
+    if (isLightMode) activateLightMode()
+    else if (isDarkMode) activateDarkMode()
+    else if (isNotSpecified || hasNoSupport) {
+      console.log('You specified no preference for a color scheme or your browser does not support it. I Schedule dark mode during night time.')
+      var now = new Date()
+      var hour = now.getHours()
+      var isNight = hour <= 6 || hour >= 18
+      isNight ? activateDarkMode() : activateLightMode()
+    }
+    window.matchMedia('(prefers-color-scheme: dark)').addListener(function (e) {
+      if (Cookies.get('theme') === undefined) {
+        e.matches ? activateDarkMode() : activateLightMode()
+      }
+    })
+  } else if (t === 'light') activateLightMode()
+  else activateDarkMode()
+} else if (autoChangeMode === '2') {
+  now = new Date()
+  hour = now.getHours()
+  isNight = hour <= 6 || hour >= 18
+  if (t === undefined) isNight ? activateDarkMode() : activateLightMode()
+  else if (t === 'light') activateLightMode()
+  else activateDarkMode()
+} else {
+  if (t === 'dark') activateDarkMode()
+  else if (t === 'light') activateLightMode()
+}</script><link rel="stylesheet" href="/css/index.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free/css/all.min.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fancyapps/fancybox@latest/dist/jquery.fancybox.min.css"><link rel="prev" title="Java知识点系列之--RMI" href="https://coder.mtracy.club/2020/07/20/javabasic08/"><link rel="next" title="Java知识点系列之--使用Quartz进行作业任务调度" href="https://coder.mtracy.club/2020/07/20/javabasic06/"><link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Titillium+Web&amp;display=swap"><script>var GLOBAL_CONFIG = { 
+  root: '/',
+  algolia: undefined,
+  localSearch: {"path":"search.xml","languages":{"hits_empty":"找不到您查询的内容:${query}"}},
+  translate: {"defaultEncoding":1,"translateDelay":0,"msgToTraditionalChinese":"繁","msgToSimplifiedChinese":"簡"},
+  copy: {
+    success: '复制成功',
+    error: '复制错误',
+    noSupport: '浏览器不支持'
+  },
+  bookmark: {
+    message_prev: '按',
+    message_next: '键将本页加入书签'
+  },
+  runtime_unit: '天',
+  runtime: true,
+  copyright: undefined,
+  ClickShowText: {"text":"I,LOVE,YOU","fontSize":"15px"},
+  medium_zoom: false,
+  fancybox: true,
+  Snackbar: undefined,
+  justifiedGallery: {
+    js: 'https://cdn.jsdelivr.net/npm/justifiedGallery/dist/js/jquery.justifiedGallery.min.js',
+    css: 'https://cdn.jsdelivr.net/npm/justifiedGallery/dist/css/justifiedGallery.min.css'
+  },
+  baiduPush: false,
+  highlightCopy: true,
+  highlightLang: true,
+  isPhotoFigcaption: false,
+  islazyload: true,
+  isanchor: false    
+}</script><script>var GLOBAL_CONFIG_SITE = { 
+  isPost: true,
+  isHome: false,
+  isHighlightShrink: false,
+  isSidebar: true
+  }</script><noscript><style>
+#nav {
+  opacity: 1
+}
+.justified-gallery img{
+  opacity: 1
+}
+</style></noscript><meta name="generator" content="Hexo 4.2.1"></head><body><div id="mobile-sidebar"><div id="menu_mask"></div><div id="mobile-sidebar-menus"><div class="mobile_author_icon"><img class="avatar-img" src="http://pengjunlee.3vzhuji.net/static/img/avatar.png" onerror="onerror=null;src='http://pengjunlee.3vzhuji.net/static/img/cover1.jpg'" alt="avatar"/></div><div class="mobile_post_data"><div class="mobile_data_item is-center"><div class="mobile_data_link"><a href="/archives/"><div class="headline">文章</div><div class="length_num">86</div></a></div></div><div class="mobile_data_item is-center">      <div class="mobile_data_link"><a href="/tags/"><div class="headline">标签</div><div class="length_num">6</div></a></div></div><div class="mobile_data_item is-center">     <div class="mobile_data_link"><a href="/categories/"><div class="headline">分类</div><div class="length_num">7</div></a></div></div></div><hr/><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> 首页</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> 时间轴</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> 标签</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> 分类</span></a></div><div class="menus_item"><a class="site-page" href="/link/"><i class="fa-fw fas fa-link"></i><span> 友链</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-heart"></i><span> 关于</span></a></div></div></div></div><i class="fas fa-arrow-right on" id="toggle-sidebar"></i><div id="sidebar"><div class="sidebar-toc"><div class="sidebar-toc__title">目录</div><div class="sidebar-toc__progress"><span class="progress-notice">你已经读了</span><span class="progress-num">0</span><span class="progress-percentage">%</span><div class="sidebar-toc__progress-bar">     </div></div><div class="sidebar-toc__content"><ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#一、项目背景"><span class="toc-text">一、项目背景</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#二、eclipse安装lombok"><span class="toc-text">二、eclipse安装lombok</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#三、项目中使用lombok"><span class="toc-text">三、项目中使用lombok</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#四、原理分析"><span class="toc-text">四、原理分析</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#五、支持lombok的编译工具"><span class="toc-text">五、支持lombok的编译工具</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#六、常用lombok注解"><span class="toc-text">六、常用lombok注解</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#七、其他问题"><span class="toc-text">七、其他问题</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#八、lombok的罪恶"><span class="toc-text">八、lombok的罪恶</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#参考文献"><span class="toc-text">参考文献</span></a></li></ol></div></div></div><div id="body-wrap"><header class="post-bg" id="page-header" style="background-image: url(http://pengjunlee.3vzhuji.net/static/img/top_img7.jpg)"><nav id="nav"><span class="pull-left" id="blog_name"><a class="blog_title" id="site-name" href="/">李朋军的个人博客</a></span><span class="pull-right menus"><div id="search_button"><a class="site-page social-icon search"><i class="fas fa-search fa-fw"></i><span> 搜索</span></a></div><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> 首页</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> 时间轴</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> 标签</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> 分类</span></a></div><div class="menus_item"><a class="site-page" href="/link/"><i class="fa-fw fas fa-link"></i><span> 友链</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-heart"></i><span> 关于</span></a></div></div><span class="toggle-menu close"><a class="site-page"><i class="fas fa-bars fa-fw"></i></a></span></span></nav><div id="post-info"><div id="post-title"><div class="posttitle">Java知识点系列之--使用lombok消除冗余代码</div></div><div id="post-meta"><div class="meta-firstline"><time class="post-meta__date"><span class="post-meta__date-created" title="发表于 2020-07-20 13:07:00"><i class="far fa-calendar-alt fa-fw"></i> 发表于 2020-07-20</span><span class="post-meta__separator">|</span><span class="post-meta__date-updated" title="更新于 2020-07-20 13:07:00"><i class="fas fa-history fa-fw"></i> 更新于 2020-07-20</span></time><span class="post-meta__categories"><span class="post-meta__separator">|</span><i class="fas fa-inbox fa-fw post-meta__icon"></i><a class="post-meta__categories" href="/categories/Java%E7%9F%A5%E8%AF%86%E7%82%B9/">Java知识点</a></span></div><div class="meta-secondline"> </div><div class="meta-thirdline"><span class="post-meta-pv-cv"><i class="far fa-eye fa-fw post-meta__icon"></i><span>阅读量:</span><span id="busuanzi_value_page_pv"></span></span><span class="post-meta-commentcount"></span></div></div></div></header><main class="layout_post" id="content-inner"><article id="post"><div class="post-content" id="article-container"><blockquote>
+<p>转载自：<a href="https://my.oschina.net/darkness/blog/510808" target="_blank" rel="noopener" title="lombok的使用和原理">lombok的使用和原理</a></p>
+</blockquote>
+<h1 id="一、项目背景"><a href="#一、项目背景" class="headerlink" title="一、项目背景"></a>一、项目背景</h1><p>在写Java程序的时候经常会遇到如下情形：</p>
+<p>新建了一个Class类，然后在其中设置了几个字段，最后还需要花费很多时间来建立getter和setter方法。</p>
+<p>lombok项目的产生就是为了省去我们手动创建getter和setter方法的麻烦，它能够在我们编译源码的时候自动帮我们生成getter和setter方法。即它最终能够达到的效果是：在源码中没有getter和setter方法，但是在编译生成的字节码文件中有getter和setter方法。</p>
+<p>比如源码文件： </p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> java.io.Serializable;  </span><br><span class="line">   </span><br><span class="line"><span class="keyword">import</span> lombok.Data;  </span><br><span class="line">   </span><br><span class="line"><span class="meta">@Data</span>  </span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">BasicClusterInfo</span> <span class="keyword">implements</span> <span class="title">Serializable</span> </span>&#123;  </span><br><span class="line">   </span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">final</span> <span class="keyword">long</span> serialVersionUID = <span class="number">3478135817352393604L</span>;  </span><br><span class="line">    <span class="keyword">private</span> String            hbaseKey;  </span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">int</span>               receiverCount;  </span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>以下是编译上述源码文件得到的字节码文件，对其反编译得到的结果  </p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">BasicClusterInfo</span> <span class="keyword">extends</span> <span class="title">java</span>.<span class="title">lang</span>.<span class="title">Object</span> <span class="keyword">implements</span> <span class="title">java</span>.<span class="title">io</span>.<span class="title">Serializable</span></span>&#123;  </span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="title">BasicClusterInfo</span><span class="params">()</span></span>;  </span><br><span class="line">    <span class="keyword">public</span> java.lang.<span class="function">String <span class="title">getHbaseKey</span><span class="params">()</span></span>;  </span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">int</span> <span class="title">getReceiverCount</span><span class="params">()</span></span>;  </span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">setHbaseKey</span><span class="params">(java.lang.String)</span></span>;  </span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">setReceiverCount</span><span class="params">(<span class="keyword">int</span>)</span></span>;  </span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">boolean</span> <span class="title">equals</span><span class="params">(java.lang.Object)</span></span>;  </span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">boolean</span> <span class="title">canEqual</span><span class="params">(java.lang.Object)</span></span>;  </span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">int</span> <span class="title">hashCode</span><span class="params">()</span></span>;  </span><br><span class="line">    <span class="keyword">public</span> java.lang.<span class="function">String <span class="title">toString</span><span class="params">()</span></span>;  </span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h1 id="二、eclipse安装lombok"><a href="#二、eclipse安装lombok" class="headerlink" title="二、eclipse安装lombok"></a>二、eclipse安装lombok</h1><p>为<strong>IDE</strong>安装<strong>lombok</strong>插件非常简单，以<strong>eclipse</strong>环境为例，其安装过程分为以下几个步骤：</p>
+<p><strong>1) 下载lombok.jar包</strong></p>
+<ul>
+<li>lombok的官网地址：<a href="https://projectlombok.org/" target="_blank" rel="noopener">https://projectlombok.org/</a></li>
+<li>lombok的下载地址：<a href="https://projectlombok.org/download.html" target="_blank" rel="noopener">https://projectlombok.org/download.html</a></li>
+<li>lombok项目的Github地址：<a href="https://github.com/rzwitserloot/lombok" target="_blank" rel="noopener">https://github.com/rzwitserloot/lombok</a></li>
+</ul>
+<p><strong>2) 运行lombok.jar</strong></p>
+<p>在windows命令行中输入以下命令： </p>
+<p><code>java -jar D:\software\lombok.jar</code></p>
+<p>其中 <code>D:\software\lombok.jar</code> 这是<strong>windows</strong>下<code>lombok.jar</code>所在的位置， 数秒后将弹出以下对话框，以指定<strong>eclipse</strong>的安装路径。</p>
+<div align=center>
+
+<p><img src= "/img/loading.gif" data-src="http://pengjunlee.3vzhuji.net/static/javacore/1.png" alt="lombok示意图" title="lombok示意图"></p>
+<div align=left>
+
+<p><strong>3) 确认完eclipse的安装路径后，点击 <code>install/update</code> 按钮，即可完成安装。</strong><br><strong>4) 安装完成之后，请确认eclipse安装路径下是否多了一个lombok.jar包，并且其配置文件eclipse.ini中是否添加了如下内容:</strong></p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">-javaagent:lombok.jar</span><br><span class="line">-Xbootclasspath&#x2F;a:lombok.jar</span><br></pre></td></tr></table></figure>
+<p>那么恭喜你已经安装成功，否则将缺少的部分添加到相应的位置即可 。</p>
+<p><strong>5)重启eclipse。</strong></p>
+<h1 id="三、项目中使用lombok"><a href="#三、项目中使用lombok" class="headerlink" title="三、项目中使用lombok"></a>三、项目中使用lombok</h1><p>在项目中使用lombok的方法很简单，分为四个步骤：</p>
+<ol>
+<li>在需要自动生成getter和setter方法的类上，加上@Data注解。</li>
+<li>在编译类路径中加入lombok.jar包，若是maven工程，引入相关依赖即可。 <figure class="highlight xml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="tag">&lt;<span class="name">dependencies</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">dependency</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;<span class="name">groupId</span>&gt;</span>org.projectlombok<span class="tag">&lt;/<span class="name">groupId</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;<span class="name">artifactId</span>&gt;</span>lombok<span class="tag">&lt;/<span class="name">artifactId</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;<span class="name">version</span>&gt;</span>1.16.18<span class="tag">&lt;/<span class="name">version</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;/<span class="name">dependency</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">dependencies</span>&gt;</span></span><br></pre></td></tr></table></figure></li>
+<li>使用支持lombok的编译工具编译源代码（关于支持lombok的编译工具，见“五、支持lombok的编译工具”）。</li>
+<li>编译得到的字节码文件中自动生成了getter和setter方法。 </li>
+</ol>
+<h1 id="四、原理分析"><a href="#四、原理分析" class="headerlink" title="四、原理分析"></a>四、原理分析</h1><p>接下来对lombok的工作原理进行分析，以Oracle的javac编译工具为例。</p>
+<p>自从Java 6起，javac就支持<code>JSR 269 Pluggable Annotation Processing API</code>规范，只要程序实现了该API，就能在javac运行的时候得到调用。</p>
+<p>举例来说，现在有一个实现了<code>JSR 269 API</code>的程序A,那么使用javac编译源码的时候具体流程如下：</p>
+<ol>
+<li>javac对源代码进行分析，生成一棵抽象语法树(AST)。</li>
+<li>运行过程中调用实现了”JSR 269 API”的A程序。</li>
+<li>此时A程序就可以完成它自己的逻辑，包括修改第一步骤得到的抽象语法树(AST)。</li>
+<li>javac使用修改后的抽象语法树(AST)生成字节码文件。 </li>
+</ol>
+<p>详细的流程图如下： </p>
+<div align=center>
+
+<p><img src= "/img/loading.gif" data-src="http://pengjunlee.3vzhuji.net/static/javacore/2.gif" alt="lombok示意图" title="lombok示意图"></p>
+<div align=left>
+
+<h1 id="五、支持lombok的编译工具"><a href="#五、支持lombok的编译工具" class="headerlink" title="五、支持lombok的编译工具"></a>五、支持lombok的编译工具</h1><ul>
+<li>由“四、原理分析”可知，Oracle javac直接支持lombok。</li>
+<li>常用的项目管理工具Maven所使用的java编译工具来源于配置的第三方工具，如果我们配置这个第三方工具为Oracle javac的话，那么Maven也就直接支持lombok了。</li>
+<li>Intellij Idea配置的编译工具为Oracle javac的话，也就直接支持lombok了。</li>
+<li>Eclipse中使用的不是Oracle javac这个编译工具，而是自己实现的Eclipse Compiler for Java (ECJ).要想使ECJ支持lombok，得进行设置，具体是在Eclipse程序目录中的eclipse.ini文件中添加如下两行设置：<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">-javaagent:[lombok.jar所在路径]</span><br><span class="line">-Xbootclasspath&#x2F;a:[lombok.jar所在路径]</span><br></pre></td></tr></table></figure>
+
+</li>
+</ul>
+<h1 id="六、常用lombok注解"><a href="#六、常用lombok注解" class="headerlink" title="六、常用lombok注解"></a>六、常用lombok注解</h1><p>lombok 提供的注解不多，可以参考官方视频的讲解和官方文档。</p>
+<p>Lombok 注解在线帮助文档：<a href="http://projectlombok.org/features/index" target="_blank" rel="noopener">http://projectlombok.org/features/index</a></p>
+<p>下面是几个比较常用的 lombok 注解：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">@Data   ：注解在类上；提供类所有属性的 getting 和 setting 方法，此外还提供了equals、canEqual、hashCode、toString 方法</span><br><span class="line">@Setter：注解在属性上；为属性提供 setting 方法</span><br><span class="line">@Getter：注解在属性上；为属性提供 getting 方法</span><br><span class="line">@Log4j ：注解在类上；为类提供一个 属性名为log 的 log4j 日志对象</span><br><span class="line">@NoArgsConstructor：注解在类上；为类提供一个无参的构造方法</span><br><span class="line">@AllArgsConstructor：注解在类上；为类提供一个全参的构造方法</span><br></pre></td></tr></table></figure>
+
+<h1 id="七、其他问题"><a href="#七、其他问题" class="headerlink" title="七、其他问题"></a>七、其他问题</h1><p>现在使用Intellij Idea作为Java项目的IDE，配置Oracle javac作为编译工具。</p>
+<p>现在有一个A类，其中有一些字段，没有创建它们的setter和getter方法，使用了lombok的@Data注解，另外有一个B类，它调用了A类实例的相应字段的setter和getter方法。</p>
+<p>编译A类和B类所在的项目，并不会报错，因为最终生成的A类字节码文件中存在相应字段的setter和getter方法。但是，IDE发现B类源代码中所使用的A类实例的setter和getter方法在A类源代码中找不到定义，IDE会认为这是错误。</p>
+<p>要解决以上这个不是真正错误的错误，可以下载安装Intellij Idea中的”Lombok plugin”。  </p>
+<h1 id="八、lombok的罪恶"><a href="#八、lombok的罪恶" class="headerlink" title="八、lombok的罪恶"></a>八、lombok的罪恶</h1><p>使用lombok虽然能够省去手动创建setter和getter方法的麻烦，但是却大大降低了源代码文件的可读性和完整性，降低了阅读源代码的舒适度。  </p>
+<h1 id="参考文献"><a href="#参考文献" class="headerlink" title="参考文献"></a>参考文献</h1><p>   [1] <a href="http://stackoverflow.com/questions/6107197/how-does-lombok-work" target="_blank" rel="noopener">http://stackoverflow.com/questions/6107197/how-does-lombok-work</a><br>   [2] <a href="https://projectlombok.org/download.html" target="_blank" rel="noopener">https://projectlombok.org/download.html</a><br>   [3] <a href="http://stackoverflow.com/questions/3061654/what-is-the-difference-between-javac-and-the-eclipse-compiler" target="_blank" rel="noopener">http://stackoverflow.com/questions/3061654/what-is-the-difference-between-javac-and-the-eclipse-compiler</a><br>   [4] <a href="http://www.ibm.com/developerworks/library/j-lombok/" target="_blank" rel="noopener">http://www.ibm.com/developerworks/library/j-lombok/</a><br>   [5] <a href="http://notatube.blogspot.com/2010/12/project-lombok-creating-custom.html" target="_blank" rel="noopener">http://notatube.blogspot.com/2010/12/project-lombok-creating-custom.html</a></p>
+</div><div class="tag_share"><div class="post_share"><div class="social-share" data-image="http://pengjunlee.3vzhuji.net/static/img/top_img1.jpg" data-sites="facebook,twitter,wechat,weibo,qq"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/social-share.js/dist/css/share.min.css"/><script src="https://cdn.jsdelivr.net/npm/social-share.js/dist/js/social-share.min.js"></script></div></div><div class="post-reward"><button class="reward-button"><i class="fas fa-qrcode"></i> 打赏<div class="reward-main"><ul class="reward-all"><li class="reward-item"><img class="post-qr-code__img" src="http://pengjunlee.3vzhuji.net/static/img/WeChanQR.jpg" alt="微信支付" onclick="window.open('http://pengjunlee.3vzhuji.net/static/img/WeChanQR.jpg')"/><div class="post-qr-code__desc">微信支付</div></li><li class="reward-item"><img class="post-qr-code__img" src="http://pengjunlee.3vzhuji.net/static/img/AliPayQR.jpg" alt="支付宝" onclick="window.open('http://pengjunlee.3vzhuji.net/static/img/AliPayQR.jpg')"/><div class="post-qr-code__desc">支付宝</div></li></ul></div></button></div><nav class="pagination-post" id="pagination"><div class="prev-post pull-left"><a href="/2020/07/20/javabasic08/"><img class="prev-cover" data-src="http://pengjunlee.3vzhuji.net/static/img/top_img8.jpg" onerror="onerror=null;src='http://pengjunlee.3vzhuji.net/static/img/cover2.jpg'"><div class="pagination-info"><div class="label">上一篇</div><div class="prev_info">Java知识点系列之--RMI</div></div></a></div><div class="next-post pull-right"><a href="/2020/07/20/javabasic06/"><img class="next-cover" data-src="http://pengjunlee.3vzhuji.net/static/img/top_img6.jpg" onerror="onerror=null;src='http://pengjunlee.3vzhuji.net/static/img/cover2.jpg'"><div class="pagination-info"><div class="label">下一篇</div><div class="next_info">Java知识点系列之--使用Quartz进行作业任务调度</div></div></a></div></nav><div class="relatedPosts"><div class="relatedPosts_headline"><i class="fas fa-thumbs-up fa-fw"></i><span> 相关推荐</span></div><div class="relatedPosts_list"><div class="relatedPosts_item"><a href="/2020/07/20/javabasic26/" title="Java知识点系列之--清空整个文件夹（目录）"><img class="relatedPosts_cover" data-src="http://pengjunlee.3vzhuji.net/static/img/top_img26.jpg"><div class="relatedPosts_main is-center"><div class="relatedPosts_date"><i class="far fa-calendar-alt fa-fw"></i> 2020-07-20</div><div class="relatedPosts_title">Java知识点系列之--清空整个文件夹（目录）</div></div></a></div><div class="relatedPosts_item"><a href="/2020/07/20/javabasic02/" title="Java知识点系列之--使用HttpURLConnection访问webservice接口"><img class="relatedPosts_cover" data-src="http://pengjunlee.3vzhuji.net/static/img/top_img2.jpg"><div class="relatedPosts_main is-center"><div class="relatedPosts_date"><i class="far fa-calendar-alt fa-fw"></i> 2020-07-20</div><div class="relatedPosts_title">Java知识点系列之--使用HttpURLConnection访问webservice接口</div></div></a></div><div class="relatedPosts_item"><a href="/2020/07/20/javabasic04/" title="Java知识点系列之--Future"><img class="relatedPosts_cover" data-src="http://pengjunlee.3vzhuji.net/static/img/top_img4.jpg"><div class="relatedPosts_main is-center"><div class="relatedPosts_date"><i class="far fa-calendar-alt fa-fw"></i> 2020-07-20</div><div class="relatedPosts_title">Java知识点系列之--Future</div></div></a></div><div class="relatedPosts_item"><a href="/2020/07/20/javabasic08/" title="Java知识点系列之--RMI"><img class="relatedPosts_cover" data-src="http://pengjunlee.3vzhuji.net/static/img/top_img8.jpg"><div class="relatedPosts_main is-center"><div class="relatedPosts_date"><i class="far fa-calendar-alt fa-fw"></i> 2020-07-20</div><div class="relatedPosts_title">Java知识点系列之--RMI</div></div></a></div><div class="relatedPosts_item"><a href="/2020/07/20/javabasic12/" title="Java知识点系列之--MD5加密"><img class="relatedPosts_cover" data-src="http://pengjunlee.3vzhuji.net/static/img/top_img12.jpg"><div class="relatedPosts_main is-center"><div class="relatedPosts_date"><i class="far fa-calendar-alt fa-fw"></i> 2020-07-20</div><div class="relatedPosts_title">Java知识点系列之--MD5加密</div></div></a></div><div class="relatedPosts_item"><a href="/2020/07/20/javabasic14/" title="Java知识点系列之--本地方法"><img class="relatedPosts_cover" data-src="http://pengjunlee.3vzhuji.net/static/img/top_img14.jpg"><div class="relatedPosts_main is-center"><div class="relatedPosts_date"><i class="far fa-calendar-alt fa-fw"></i> 2020-07-20</div><div class="relatedPosts_title">Java知识点系列之--本地方法</div></div></a></div></div></div><hr><div id="post-comment"><div class="comment_headling"><i class="fas fa-comments fa-fw"></i><span> 评论</span></div><div class="vcomment" id="vcomment"></div><script src="https://cdn.jsdelivr.net/npm/valine/dist/Valine.min.js"></script><script>var requestSetting = function (from,set) {
+  var from = from
+  var setting = set.split(',').filter(function(item){
+  return from.indexOf(item) > -1
+  });
+  setting = setting.length == 0 ? from :setting;
+  return setting
+}
+
+var guestInfo = requestSetting(['nick','mail','link'],'nick,mail,link')
+var requiredFields = requestSetting(['nick','mail'],'nick,mail')
+
+window.valine = new Valine({
+  el:'#vcomment',
+  appId: 'k0QcRvFFw7AovKS8un6pys2S-gzGzoHsz',
+  appKey: 'Y5w42nyHhdKlYHT00svHuIya',
+  placeholder: 'Please leave your footprints',
+  avatar: 'monsterid',
+  meta: guestInfo,
+  pageSize: '10',
+  lang: 'zh-CN',
+  recordIP: false,
+  serverURLs: '',
+  emojiCDN: '',
+  emojiMaps: "",
+  enableQQ: false,
+  requiredFields: requiredFields
+});</script></div></article></main><footer id="footer" style="background-image: url(http://pengjunlee.3vzhuji.net/static/img/top_img7.jpg)" data-type="photo"><div id="footer-wrap"><div class="copyright">&copy;2020 By pengjunlee</div><div class="framework-info"><span>驱动 </span><a href="https://hexo.io" target="_blank" rel="noopener"><span>Hexo</span></a><span class="footer-separator">|</span><span>主题 </span><a href="https://github.com/jerryc127/hexo-theme-butterfly" target="_blank" rel="noopener"><span>Butterfly</span></a></div></div></footer></div><section class="rightside" id="rightside"><div id="rightside-config-hide"><button id="readmode" title="阅读模式"><i class="fas fa-book-open"></i></button><button id="font_plus" title="放大字体"><i class="fas fa-plus"></i></button><button id="font_minus" title="缩小字体"><i class="fas fa-minus"></i></button><button class="translate_chn_to_cht" id="translateLink" title="简繁转换">簡</button><button id="darkmode" title="浅色和深色模式转换"><i class="fas fa-adjust"></i></button></div><div id="rightside-config-show"><button id="rightside_config" title="设置"><i class="fas fa-cog"></i></button><a id="to_comment" href="#post-comment" title="直达评论"><i class="scroll_to_comment fas fa-comments"></i></a><button class="close" id="mobile-toc-button" title="目录"><i class="fas fa-list-ul"></i></button><button id="go-up" title="回到顶部"><i class="fas fa-arrow-up"></i></button></div></section><div class="search-dialog" id="local-search"><div class="search-dialog__title" id="local-search-title">本地搜索</div><div id="local-input-panel"><div id="local-search-input"><div class="local-search-box"><input class="local-search-box--input" placeholder="搜索文章" type="text"/></div></div></div><hr/><div id="local-search-results"><div id="local-hits"></div><div id="local-stats"><div class="local-search-stats__hr" id="hr"><span>由</span> <a href="https://github.com/wzpan/hexo-generator-search" target="_blank" rel="noopener" style="color:#49B1F5;">hexo-generator-search</a>
+ <span>提供支持</span></div></div></div><span class="search-close-button"><i class="fas fa-times"></i></span></div><div class="search-mask"></div><script src="https://cdn.jsdelivr.net/npm/jquery@latest/dist/jquery.min.js"></script><script src="/js/utils.js"></script><script src="/js/main.js"></script><script src="/js/tw_cn.js"></script><script src="https://cdn.jsdelivr.net/npm/@fancyapps/fancybox@latest/dist/jquery.fancybox.min.js"></script><script defer id="ribbon" src="/js/third-party/canvas-ribbon.js" size="150" alpha="0.6" zIndex="-1" mobile="false" data-click="false"></script><script async src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script><script src="https://cdn.jsdelivr.net/npm/instant.page/instantpage.min.js" type="module" defer></script><script src="https://cdn.jsdelivr.net/npm/vanilla-lazyload/dist/lazyload.iife.min.js" async></script><script src="/js/third-party/ClickShowText.js"></script><script src="/js/search/local-search.js"></script></body></html>
