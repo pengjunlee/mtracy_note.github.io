@@ -1,0 +1,216 @@
+<!DOCTYPE html><html lang="zh-CN" data-theme="light"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width,initial-scale=1"><title>安全框架系列之--Kerberos身份验证流程 | 李朋军的个人博客</title><meta name="description" content="一篇博文带你了解Kerberos身份验证流程。"><meta name="keywords" content="Kerberos, 安全"><meta name="author" content="pengjunlee,pengjunlee@163.com"><meta name="copyright" content="pengjunlee"><meta name="format-detection" content="telephone=no"><link rel="shortcut icon" href="http://pengjunlee.3vzhuji.net/static/img/favicon.ico"><link rel="canonical" href="https://coder.mtracy.club/2020/08/01/%E5%AE%89%E5%85%A8%E6%A1%86%E6%9E%B6/security02/"><meta http-equiv="Cache-Control" content="no-transform"><meta http-equiv="Cache-Control" content="no-siteapp"><link rel="preconnect" href="//cdn.jsdelivr.net"/><link rel="preconnect" href="//fonts.googleapis.com" crossorigin="crossorigin"/><link rel="preconnect" href="//busuanzi.ibruce.info"/><meta property="og:type" content="article"><meta property="og:title" content="安全框架系列之--Kerberos身份验证流程"><meta property="og:url" content="https://coder.mtracy.club/2020/08/01/%E5%AE%89%E5%85%A8%E6%A1%86%E6%9E%B6/security02/"><meta property="og:site_name" content="李朋军的个人博客"><meta property="og:description" content="一篇博文带你了解Kerberos身份验证流程。"><meta property="og:image" content="http://pengjunlee.3vzhuji.net/static/img/top_img2.jpg"><meta property="article:published_time" content="2020-08-01T14:02:00.000Z"><meta property="article:modified_time" content="2020-08-01T14:02:00.000Z"><meta name="twitter:card" content="summary"><script>var activateDarkMode = function () {
+  document.documentElement.setAttribute('data-theme', 'dark')
+  if (document.querySelector('meta[name="theme-color"]') !== null) {
+    document.querySelector('meta[name="theme-color"]').setAttribute('content', '#000')
+  }
+}
+var activateLightMode = function () {
+  document.documentElement.setAttribute('data-theme', 'light')
+  if (document.querySelector('meta[name="theme-color"]') !== null) {
+    document.querySelector('meta[name="theme-color"]').setAttribute('content', '#fff')
+  }
+}
+
+var getCookies = function (name) {
+  const value = `; ${document.cookie}`
+  const parts = value.split(`; ${name}=`)
+  if (parts.length === 2) return parts.pop().split(';').shift()
+}
+
+var autoChangeMode = 'false'
+var t = getCookies('theme')
+if (autoChangeMode === '1') {
+  var isDarkMode = window.matchMedia('(prefers-color-scheme: dark)').matches
+  var isLightMode = window.matchMedia('(prefers-color-scheme: light)').matches
+  var isNotSpecified = window.matchMedia('(prefers-color-scheme: no-preference)').matches
+  var hasNoSupport = !isDarkMode && !isLightMode && !isNotSpecified
+
+  if (t === undefined) {
+    if (isLightMode) activateLightMode()
+    else if (isDarkMode) activateDarkMode()
+    else if (isNotSpecified || hasNoSupport) {
+      console.log('You specified no preference for a color scheme or your browser does not support it. I Schedule dark mode during night time.')
+      var now = new Date()
+      var hour = now.getHours()
+      var isNight = hour <= 6 || hour >= 18
+      isNight ? activateDarkMode() : activateLightMode()
+    }
+    window.matchMedia('(prefers-color-scheme: dark)').addListener(function (e) {
+      if (Cookies.get('theme') === undefined) {
+        e.matches ? activateDarkMode() : activateLightMode()
+      }
+    })
+  } else if (t === 'light') activateLightMode()
+  else activateDarkMode()
+} else if (autoChangeMode === '2') {
+  now = new Date()
+  hour = now.getHours()
+  isNight = hour <= 6 || hour >= 18
+  if (t === undefined) isNight ? activateDarkMode() : activateLightMode()
+  else if (t === 'light') activateLightMode()
+  else activateDarkMode()
+} else {
+  if (t === 'dark') activateDarkMode()
+  else if (t === 'light') activateLightMode()
+}</script><link rel="stylesheet" href="/css/index.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free/css/all.min.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fancyapps/fancybox@latest/dist/jquery.fancybox.min.css"><link rel="prev" title="安全框架系列之--一个例子理解OAuth2.0" href="https://coder.mtracy.club/2020/08/01/%E5%AE%89%E5%85%A8%E6%A1%86%E6%9E%B6/security03/"><link rel="next" title="安全框架系列之--10分钟了解JSON Web令牌(JWT)" href="https://coder.mtracy.club/2020/08/01/%E5%AE%89%E5%85%A8%E6%A1%86%E6%9E%B6/security01/"><link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Titillium+Web&amp;display=swap"><script>var GLOBAL_CONFIG = { 
+  root: '/',
+  algolia: undefined,
+  localSearch: {"path":"search.xml","languages":{"hits_empty":"找不到您查询的内容:${query}"}},
+  translate: {"defaultEncoding":1,"translateDelay":0,"msgToTraditionalChinese":"繁","msgToSimplifiedChinese":"簡"},
+  copy: {
+    success: '复制成功',
+    error: '复制错误',
+    noSupport: '浏览器不支持'
+  },
+  bookmark: {
+    message_prev: '按',
+    message_next: '键将本页加入书签'
+  },
+  runtime_unit: '天',
+  runtime: true,
+  copyright: undefined,
+  ClickShowText: {"text":"I,LOVE,YOU","fontSize":"15px"},
+  medium_zoom: false,
+  fancybox: true,
+  Snackbar: undefined,
+  justifiedGallery: {
+    js: 'https://cdn.jsdelivr.net/npm/justifiedGallery/dist/js/jquery.justifiedGallery.min.js',
+    css: 'https://cdn.jsdelivr.net/npm/justifiedGallery/dist/css/justifiedGallery.min.css'
+  },
+  baiduPush: false,
+  highlightCopy: true,
+  highlightLang: true,
+  isPhotoFigcaption: false,
+  islazyload: true,
+  isanchor: false    
+}</script><script>var GLOBAL_CONFIG_SITE = { 
+  isPost: true,
+  isHome: false,
+  isHighlightShrink: false,
+  isSidebar: true
+  }</script><noscript><style>
+#nav {
+  opacity: 1
+}
+.justified-gallery img{
+  opacity: 1
+}
+</style></noscript><meta name="generator" content="Hexo 4.2.1"></head><body><div id="mobile-sidebar"><div id="menu_mask"></div><div id="mobile-sidebar-menus"><div class="mobile_author_icon"><img class="avatar-img" src="http://pengjunlee.3vzhuji.net/static/img/avatar.png" onerror="onerror=null;src='http://pengjunlee.3vzhuji.net/static/img/cover1.jpg'" alt="avatar"/></div><div class="mobile_post_data"><div class="mobile_data_item is-center"><div class="mobile_data_link"><a href="/archives/"><div class="headline">文章</div><div class="length_num">163</div></a></div></div><div class="mobile_data_item is-center">      <div class="mobile_data_link"><a href="/tags/"><div class="headline">标签</div><div class="length_num">15</div></a></div></div><div class="mobile_data_item is-center">     <div class="mobile_data_link"><a href="/categories/"><div class="headline">分类</div><div class="length_num">13</div></a></div></div></div><hr/><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> 首页</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> 时间轴</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> 标签</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> 分类</span></a></div><div class="menus_item"><a class="site-page" href="/link/"><i class="fa-fw fas fa-link"></i><span> 友链</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-heart"></i><span> 关于</span></a></div></div></div></div><i class="fas fa-arrow-right on" id="toggle-sidebar"></i><div id="sidebar"><div class="sidebar-toc"><div class="sidebar-toc__title">目录</div><div class="sidebar-toc__progress"><span class="progress-notice">你已经读了</span><span class="progress-num">0</span><span class="progress-percentage">%</span><div class="sidebar-toc__progress-bar">     </div></div><div class="sidebar-toc__content"><ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#介绍"><span class="toc-number">1.</span> <span class="toc-text">介绍</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#Kerberos协议框架"><span class="toc-number">2.</span> <span class="toc-text">Kerberos协议框架</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#Kerberos粗略的验证流程"><span class="toc-number">3.</span> <span class="toc-text">Kerberos粗略的验证流程</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#Kerberos详解认证流程"><span class="toc-number">4.</span> <span class="toc-text">Kerberos详解认证流程</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#TheAuthentication-Service-Exchange"><span class="toc-number">4.1.</span> <span class="toc-text">TheAuthentication Service Exchange</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#TheTicket-Granting-Service-TGS-Exchange"><span class="toc-number">4.2.</span> <span class="toc-text">TheTicket-Granting Service (TGS) Exchange</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#TheClient-Server-Authentication-Exchange"><span class="toc-number">4.3.</span> <span class="toc-text">TheClient&#x2F;Server Authentication Exchange</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#参考文章"><span class="toc-number">5.</span> <span class="toc-text">参考文章</span></a></li></ol></div></div></div><div id="body-wrap"><header class="post-bg" id="page-header" style="background-image: url(http://pengjunlee.3vzhuji.net/static/img/top_img2.jpg)"><nav id="nav"><span class="pull-left" id="blog_name"><a class="blog_title" id="site-name" href="/">李朋军的个人博客</a></span><span class="pull-right menus"><div id="search_button"><a class="site-page social-icon search"><i class="fas fa-search fa-fw"></i><span> 搜索</span></a></div><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> 首页</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> 时间轴</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> 标签</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> 分类</span></a></div><div class="menus_item"><a class="site-page" href="/link/"><i class="fa-fw fas fa-link"></i><span> 友链</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-heart"></i><span> 关于</span></a></div></div><span class="toggle-menu close"><a class="site-page"><i class="fas fa-bars fa-fw"></i></a></span></span></nav><div id="post-info"><div id="post-title"><div class="posttitle">安全框架系列之--Kerberos身份验证流程</div></div><div id="post-meta"><div class="meta-firstline"><time class="post-meta__date"><span class="post-meta__date-created" title="发表于 2020-08-01 14:02:00"><i class="far fa-calendar-alt fa-fw"></i> 发表于 2020-08-01</span><span class="post-meta__separator">|</span><span class="post-meta__date-updated" title="更新于 2020-08-01 14:02:00"><i class="fas fa-history fa-fw"></i> 更新于 2020-08-01</span></time><span class="post-meta__categories"><span class="post-meta__separator">|</span><i class="fas fa-inbox fa-fw post-meta__icon"></i><a class="post-meta__categories" href="/categories/%E5%AE%89%E5%85%A8%E6%A1%86%E6%9E%B6/">安全框架</a></span></div><div class="meta-secondline"> </div><div class="meta-thirdline"><span class="post-meta-pv-cv"><i class="far fa-eye fa-fw post-meta__icon"></i><span>阅读量:</span><span id="busuanzi_value_page_pv"></span></span><span class="post-meta-commentcount"></span></div></div></div></header><main class="layout_post" id="content-inner"><article id="post"><div class="post-content" id="article-container"><blockquote>
+<p>转载自：<a href="https://www.cnblogs.com/zpchcbd/p/11707302.html" target="_blank" rel="noopener">https://www.cnblogs.com/zpchcbd/p/11707302.html</a></p>
+</blockquote>
+<h1 id="介绍"><a href="#介绍" class="headerlink" title="介绍"></a>介绍</h1><p>Kerberos 是一种由 MIT（麻省理工大学）提出的一种网络身份验证协议。它旨在通过使用密钥加密技术为客户端/服务器应用程序提供强身份验证。</p>
+<p>在 Kerberos 认证中，最主要的问题是如何证明「<code>你是你</code>」的问题，如当一个 Client 去访问 Server 服务器上的某服务时，Server 如何判断 Client 是否有权限来访问自己主机上的服务，同时保证在这个过程中的通讯内容即使被拦截或篡改也不影响通讯的安全性，这正是 Kerberos 解决的问题。在域渗透过程中 Kerberos 协议的攻防也是很重要的存在。</p>
+<p>Kerberos 主要是用在域环境下的身份认证协议。</p>
+<h1 id="Kerberos协议框架"><a href="#Kerberos协议框架" class="headerlink" title="Kerberos协议框架"></a>Kerberos协议框架</h1><p>在 Kerberos 协议中主要是有三个角色的存在：</p>
+<ol>
+<li>访问服务的 Client；</li>
+<li>提供服务的 Server；</li>
+<li>KDC（Key Distribution Center）密钥分发中心</li>
+</ol>
+<div align=center>
+
+<p><img src= "/img/loading.gif" data-src="http://pengjunlee.3vzhuji.net/static/security/50.jpg" alt="Kerberos图" title="Kerberos示意图"></p>
+<div align=left>
+
+<blockquote>
+<p><font color=red>注意</font>：</p>
+</blockquote>
+<ol>
+<li>KDC 服务默认会安装在一个域的域控中</li>
+<li>从物理层面看，AD与KDC均为域控制器(Domain Controller)</li>
+<li>AD其实是一个类似于本机SAM的一个数据库，全称叫account database，存储所有client的白名单，只有存在于白名单的client才能顺利申请到TGT</li>
+<li>KDC 服务框架中包含一个 KRBTGT 账户，它是在创建域时系统自动创建的一个账号，你可以暂时理解为他就是一个无法登陆的账号，在发放票据时会使用到它的密码 HASH 值。</li>
+</ol>
+<div align=center>
+
+<p><img src= "/img/loading.gif" data-src="http://pengjunlee.3vzhuji.net/static/security/51.jpg" alt="Kerberos图" title="Kerberos示意图"></p>
+<div align=left>
+
+<p>上文提到的TGT，KDC,client，server又是什么东西呢，下文来介绍下：</p>
+<h1 id="Kerberos粗略的验证流程"><a href="#Kerberos粗略的验证流程" class="headerlink" title="Kerberos粗略的验证流程"></a>Kerberos粗略的验证流程</h1><p>先来举个例子：如果把 Kerberos 中的票据类比为一张火车票，那么 Client 端就是乘客，Server 端就是火车，而 KDC 就是就是车站的认证系统。如果Client端的票据是合法的（由你本人身份证购买并由你本人持有）同时有访问 Server 端服务的权限（车票对应车次正确）那么你才能上车。当然和火车票不一样的是 Kerberos 中有存在两张票，而火车票从头到尾只有一张。</p>
+<p>在KDC中又分为两个部分：<code>Authentication Service</code>和<code>Ticket Granting Service</code></p>
+<ul>
+<li>Authentication Service：AS 的作用就是验证 Client 端的身份（确定你是身份证上的本人），验证通过就会给一张 TGT（Ticket Granting Ticket）票给 Client。</li>
+<li>Ticket Granting Service：TGS 的作用是通过 AS 发送给 Client 的票（TGT）换取访问 Server 端的票（上车的票 ST）。ST（ServiceTicket）也被称之为 TGS Ticket，为了和 TGS 区分，在这里就用 ST 来说明，所以TGS Ticket和ST的意思是一样的。</li>
+</ul>
+<p>这就说明了为什么在Kerberos中存有两种票，其实就是更加细分了其中的验证，简单的描述就是首先你拿身份证验证头像是不是一样，是的话就返回一张TGT，然后在通过验证车票获得上车的资格，这里就有对TGT的验证，通过的话再返回一张ST/TGS Ticket的票，如果都可以那么就验证成功了。</p>
+<h1 id="Kerberos详解认证流程"><a href="#Kerberos详解认证流程" class="headerlink" title="Kerberos详解认证流程"></a>Kerberos详解认证流程</h1><p>当 Client 想要访问 Server 上的某个服务时，需要先向 AS 证明自己的身份，然后通过 AS 发放的 TGT 向 Server 发起认证请求，这个过程分为三块：</p>
+<ul>
+<li>The Authentication Service Exchange：Client 与 AS 的交互，</li>
+<li>The Ticket-Granting Service (TGS) Exchange：Client 与 TGS 的交互，</li>
+<li>The Client/Server Authentication Exchange：Client 与 Server 的交互。</li>
+</ul>
+<div align=center>
+
+<p><img src= "/img/loading.gif" data-src="http://pengjunlee.3vzhuji.net/static/security/52.jpg" alt="Kerberos图" title="Kerberos示意图"></p>
+<div align=left>
+
+<h2 id="TheAuthentication-Service-Exchange"><a href="#TheAuthentication-Service-Exchange" class="headerlink" title="TheAuthentication Service Exchange"></a>TheAuthentication Service Exchange</h2><p><strong>KRB_AS_REQ(请求)</strong>：</p>
+<p>Client-&gt;AS：Client 先向 KDC 的 AS 发送 Authenticator1(内容为Client hash加密的时间戳）</p>
+<p><strong>KRB_AS_REP(应答)</strong>：</p>
+<p>AS-&gt; Client：AS根据用户名在AD中寻找是否在白名单中，然后根据用户名提取到对应的NTLM Hash，然后会生成一个随机数session key，然后返回给Client由Client的ntlm hash加密的session key-as作为AS数据，再返回TGT（使用KDC中krbtgt的NTLM Hash加密session key和客户端的信息，客户端的信息里面包含了时间戳等信息）</p>
+<p><strong>AS验证的简述</strong>：在 KDC(AD) 中存储了域中所有用户的密码 HASH，当 AS 接收到 Client 的请求之后会根据 KDC 中存储的密码来解密，解密成功并且验证信息。<br>验证成功后返回给 Client两个东西，一个是由 Client 密码 HASH 加密的 session key-as 和 TGT（由 KRBTGT HASH 加密的 session key 和 TimeStamp 等信息）。</p>
+<div align=center>
+
+<p><img src= "/img/loading.gif" data-src="http://pengjunlee.3vzhuji.net/static/security/53.jpg" alt="Kerberos图" title="Kerberos示意图"></p>
+<div align=left>
+
+<h2 id="TheTicket-Granting-Service-TGS-Exchange"><a href="#TheTicket-Granting-Service-TGS-Exchange" class="headerlink" title="TheTicket-Granting Service (TGS) Exchange"></a>TheTicket-Granting Service (TGS) Exchange</h2><p><strong>KRB_TGS_REQ(请求)</strong>：</p>
+<p>Client 接收到了加密后的session key-as 和 TGT 之后，先用自身密码 HASH解密得到session key ，TGT 是由 KDC 中KRBTGT的HASH加密，所以Client 无法解密。这时 Client 再用session key加密的TimeStamp，然后再和TGT 一起发送给 KDC 中的 TGS（TicketGranting Server）票据授权服务器换取能够访问 Server 的票据。</p>
+<p><strong>KRB_TGS_REP(应答)</strong>：</p>
+<p>TGS 收到 Client 发送过来的 TGT 和 Session key 加密的 TimeStamp 之后，首先会检查自身是否存在 Client 所请求的服务。如果服务存在，则用 KRBTGT的HASH解密 TGT。</p>
+<p>一般情况下 TGS 会检查 TGT 中的时间戳查看 TGT 是否过期，且原始地址是否和 TGT 中保存的地址相同。</p>
+<p>验证成功之后将返回Client两个东西，一个是用 session key 加密的 session key-tgs，然后另一个是 Client要访问的Server的密码 HASH 加密的 session key-tgs（前面和session key加密生成的）生成就是ST（TGS）</p>
+<div align=center>
+
+<p><img src= "/img/loading.gif" data-src="http://pengjunlee.3vzhuji.net/static/security/54.jpg" alt="Kerberos图" title="Kerberos示意图"></p>
+<div align=left>
+
+<h2 id="TheClient-Server-Authentication-Exchange"><a href="#TheClient-Server-Authentication-Exchange" class="headerlink" title="TheClient/Server Authentication Exchange"></a>TheClient/Server Authentication Exchange</h2><p><strong>KRB_AP_REQ(请求)</strong>：</p>
+<p>Client -&gt; Server 发送 Authenticator3(session key-tgs 加密 TimeStamp) 和票据 ST(Server 密码 HASH 加密 session key-tgs)</p>
+<p>Client 收到 session key 加密生成的 session key-tgs 和 Server 密码 HASH 加密 session key-tgs生成的TGS 之后，用 session key 解密得到 session key-tgs，然后把 sessionkey-tgs 加密的 TimeStamp 和 ST（也就是TGS）一起发送给 Server。</p>
+<p><strong>KRB_AP_REP(应答)</strong>：</p>
+<p>Server-&gt; Client</p>
+<p>server 通过自己的密码解密 ST，得到 sessionkey-tgs, 再用 sessionkey-tgs 解密 Authenticator3 得到 TimeStamp，验证正确返回验证成功。</p>
+<div align=center>
+
+<p><img src= "/img/loading.gif" data-src="http://pengjunlee.3vzhuji.net/static/security/55.jpg" alt="Kerberos图" title="Kerberos示意图"></p>
+<div align=left>
+
+<p>上文文字描述的也就是最开头的图片，这里再放上去，是不是会发现这张图理解了？？？</p>
+<div align=center>
+
+<p><img src= "/img/loading.gif" data-src="http://pengjunlee.3vzhuji.net/static/security/50.jpg" alt="Kerberos图" title="Kerberos示意图"></p>
+<div align=left>
+
+<h1 id="参考文章"><a href="#参考文章" class="headerlink" title="参考文章"></a>参考文章</h1><p><a href="https://tools.ietf.org/html/rfc4120.html" target="_blank" rel="noopener">https://tools.ietf.org/html/rfc4120.html</a></p>
+<p><a href="https://www.freebuf.com/articles/system/196434.html" target="_blank" rel="noopener">https://www.freebuf.com/articles/system/196434.html</a></p>
+</div><div class="tag_share"><div class="post_share"><div class="social-share" data-image="http://pengjunlee.3vzhuji.net/static/img/top_img4.jpg" data-sites="facebook,twitter,wechat,weibo,qq"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/social-share.js/dist/css/share.min.css"/><script src="https://cdn.jsdelivr.net/npm/social-share.js/dist/js/social-share.min.js"></script></div></div><div class="post-reward"><button class="reward-button"><i class="fas fa-qrcode"></i> 打赏<div class="reward-main"><ul class="reward-all"><li class="reward-item"><img class="post-qr-code__img" src="http://pengjunlee.3vzhuji.net/static/img/WeChanQR.jpg" alt="微信支付" onclick="window.open('http://pengjunlee.3vzhuji.net/static/img/WeChanQR.jpg')"/><div class="post-qr-code__desc">微信支付</div></li><li class="reward-item"><img class="post-qr-code__img" src="http://pengjunlee.3vzhuji.net/static/img/AliPayQR.jpg" alt="支付宝" onclick="window.open('http://pengjunlee.3vzhuji.net/static/img/AliPayQR.jpg')"/><div class="post-qr-code__desc">支付宝</div></li></ul></div></button></div><nav class="pagination-post" id="pagination"><div class="prev-post pull-left"><a href="/2020/08/01/%E5%AE%89%E5%85%A8%E6%A1%86%E6%9E%B6/security03/"><img class="prev-cover" data-src="http://pengjunlee.3vzhuji.net/static/img/top_img3.jpg" onerror="onerror=null;src='http://pengjunlee.3vzhuji.net/static/img/cover2.jpg'"><div class="pagination-info"><div class="label">上一篇</div><div class="prev_info">安全框架系列之--一个例子理解OAuth2.0</div></div></a></div><div class="next-post pull-right"><a href="/2020/08/01/%E5%AE%89%E5%85%A8%E6%A1%86%E6%9E%B6/security01/"><img class="next-cover" data-src="http://pengjunlee.3vzhuji.net/static/img/top_img1.jpg" onerror="onerror=null;src='http://pengjunlee.3vzhuji.net/static/img/cover2.jpg'"><div class="pagination-info"><div class="label">下一篇</div><div class="next_info">安全框架系列之--10分钟了解JSON Web令牌(JWT)</div></div></a></div></nav><hr><div id="post-comment"><div class="comment_headling"><i class="fas fa-comments fa-fw"></i><span> 评论</span></div><div class="vcomment" id="vcomment"></div><script src="https://cdn.jsdelivr.net/npm/valine/dist/Valine.min.js"></script><script>var requestSetting = function (from,set) {
+  var from = from
+  var setting = set.split(',').filter(function(item){
+  return from.indexOf(item) > -1
+  });
+  setting = setting.length == 0 ? from :setting;
+  return setting
+}
+
+var guestInfo = requestSetting(['nick','mail','link'],'nick,mail,link')
+var requiredFields = requestSetting(['nick','mail'],'nick,mail')
+
+window.valine = new Valine({
+  el:'#vcomment',
+  appId: 'k0QcRvFFw7AovKS8un6pys2S-gzGzoHsz',
+  appKey: 'Y5w42nyHhdKlYHT00svHuIya',
+  placeholder: 'Please leave your footprints',
+  avatar: 'monsterid',
+  meta: guestInfo,
+  pageSize: '10',
+  lang: 'zh-CN',
+  recordIP: false,
+  serverURLs: '',
+  emojiCDN: '',
+  emojiMaps: "",
+  enableQQ: false,
+  requiredFields: requiredFields
+});</script></div></article></main><footer id="footer" style="background-image: url(http://pengjunlee.3vzhuji.net/static/img/top_img2.jpg)" data-type="photo"><div id="footer-wrap"><div class="copyright">&copy;2020 By pengjunlee</div><div class="framework-info"><span>驱动 </span><a href="https://hexo.io" target="_blank" rel="noopener"><span>Hexo</span></a><span class="footer-separator">|</span><span>主题 </span><a href="https://github.com/jerryc127/hexo-theme-butterfly" target="_blank" rel="noopener"><span>Butterfly</span></a></div></div></footer></div><section class="rightside" id="rightside"><div id="rightside-config-hide"><button id="readmode" title="阅读模式"><i class="fas fa-book-open"></i></button><button id="font_plus" title="放大字体"><i class="fas fa-plus"></i></button><button id="font_minus" title="缩小字体"><i class="fas fa-minus"></i></button><button class="translate_chn_to_cht" id="translateLink" title="简繁转换">簡</button><button id="darkmode" title="浅色和深色模式转换"><i class="fas fa-adjust"></i></button></div><div id="rightside-config-show"><button id="rightside_config" title="设置"><i class="fas fa-cog"></i></button><a id="to_comment" href="#post-comment" title="直达评论"><i class="scroll_to_comment fas fa-comments"></i></a><button class="close" id="mobile-toc-button" title="目录"><i class="fas fa-list-ul"></i></button><button id="go-up" title="回到顶部"><i class="fas fa-arrow-up"></i></button></div></section><div class="search-dialog" id="local-search"><div class="search-dialog__title" id="local-search-title">本地搜索</div><div id="local-input-panel"><div id="local-search-input"><div class="local-search-box"><input class="local-search-box--input" placeholder="搜索文章" type="text"/></div></div></div><hr/><div id="local-search-results"><div id="local-hits"></div><div id="local-stats"><div class="local-search-stats__hr" id="hr"><span>由</span> <a href="https://github.com/wzpan/hexo-generator-search" target="_blank" rel="noopener" style="color:#49B1F5;">hexo-generator-search</a>
+ <span>提供支持</span></div></div></div><span class="search-close-button"><i class="fas fa-times"></i></span></div><div class="search-mask"></div><script src="https://cdn.jsdelivr.net/npm/jquery@latest/dist/jquery.min.js"></script><script src="/js/utils.js"></script><script src="/js/main.js"></script><script src="/js/tw_cn.js"></script><script src="https://cdn.jsdelivr.net/npm/@fancyapps/fancybox@latest/dist/jquery.fancybox.min.js"></script><script defer id="ribbon" src="/js/third-party/canvas-ribbon.js" size="150" alpha="0.6" zIndex="-1" mobile="false" data-click="false"></script><script async src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script><script src="https://cdn.jsdelivr.net/npm/instant.page/instantpage.min.js" type="module" defer></script><script src="https://cdn.jsdelivr.net/npm/vanilla-lazyload/dist/lazyload.iife.min.js" async></script><script src="/js/third-party/ClickShowText.js"></script><script src="/js/search/local-search.js"></script></body></html>
